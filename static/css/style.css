@@ -265,12 +265,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .site-header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 20px; flex-wrap: wrap;
-  padding: 18px 22px;
+  padding: 19px 23px;
   border-radius: var(--radius-hand);
-  border: 1.6px solid var(--pencil);
   transform: rotate(-0.4deg);
   filter: drop-shadow(-3px 5px 12px var(--drop));
 }
+.site-header::before { border: 1.6px solid var(--pencil); }
 .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .brand-emblem {
   width: 46px; height: 46px; flex-shrink: 0;
@@ -351,13 +351,37 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ------------------------------- Filters -------------------------------- */
 .filters { display: flex; flex-direction: column; gap: 14px; margin-top: 26px; }
+/* Pencil rule closing the filter block. NO roughen filter here: the box is a
+   bare border-top, so its filter region is ~1.4px tall and the ±2.25px
+   displacement would be clipped into holes. `dashed` carries it alone. */
+.filters::after {
+  content: "";
+  display: block;
+  margin: 4px 2px 0;
+  border-top: 1.4px dashed var(--pencil);
+  opacity: 0.55;
+}
 .filter-row { display: flex; align-items: flex-start; gap: 14px; }
 .filter-label {
   flex-shrink: 0; width: 40px; padding-top: 10px;
+  position: relative;
   font-family: var(--font-hand);
   font-weight: 400; font-size: 19px;
   color: var(--accent-blue);
   text-transform: none; letter-spacing: normal;
+}
+/* Marker swipe under the label — anchored to `bottom` so it keeps hugging the
+   glyphs as the font-size steps down across breakpoints. */
+.filter-label::before {
+  content: "";
+  position: absolute;
+  left: -4px; right: -3px; bottom: 7px;
+  height: 11px;
+  z-index: -1;
+  background: color-mix(in srgb, var(--accent-blue) 22%, transparent);
+  border-radius: 6px 10px 5px 9px / 9px 5px 10px 6px;
+  rotate: -1.2deg;
+  filter: url(#rough-hi);
 }
 .chips { display: flex; flex-wrap: wrap; gap: 9px; }
 
@@ -413,26 +437,44 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   gap: 14px;
   padding: 15px 18px;
   clip-path: var(--torn);
-  transform: rotate(var(--rot, 0deg));
+  /* Tilt rides the independent `rotate` property, the drop-in rides
+     `translate`, and the hover lift rides `transform`. Three separate
+     properties = the filling animation can never freeze out the hover. */
+  rotate: var(--rot, 0deg);
   /* filter applies AFTER clip-path, so the shadow hugs the torn silhouette */
   filter: drop-shadow(-3px 5px 10px var(--drop));
-  animation: card-in 0.24s var(--ease) both;
-  transition: transform 0.22s var(--ease), filter 0.22s var(--ease);
+  animation: card-in 0.34s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 20ms);
+  transition: rotate 0.22s var(--ease), transform 0.22s var(--ease),
+              filter 0.22s var(--ease);
 }
 .g-card:nth-child(3n+1) { --rot: 0.35deg; }
 .g-card:nth-child(3n+2) { --rot: -0.45deg; }
 .g-card:nth-child(3n)   { --rot: 0.25deg; }
 
+/* Pencil rule drawn INSIDE the tear. The torn polygon bites up to 1% off each
+   side, so the line is inset past the deepest bite (~11px at desktop width) —
+   otherwise clip-path shaves it off. Reads as a box ruled inside the slip. */
+.g-card::before {
+  inset: 5px 11px;
+  border: 1.4px solid var(--pencil);
+  border-radius: var(--radius-hand);
+  opacity: 0.5;
+  transition: opacity 0.22s var(--ease);
+}
+
 /* Hover: the slip is picked up and flattened */
 .g-card:hover {
   --rot: 0deg;
-  transform: rotate(0deg) translateY(-2px);
+  transform: translateY(-2px);
   filter: drop-shadow(-5px 8px 16px var(--drop-lift));
 }
+.g-card:hover::before { opacity: 0.8; }
 
 /* ------------------------------- Rank ----------------------------------- */
 .g-rank {
   flex-shrink: 0;
+  position: relative;
   width: 38px; height: 38px;
   display: grid; place-items: center;
   font-family: var(--font-hand);
@@ -443,6 +485,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border: 1.4px solid var(--pencil);
   background: transparent;
 }
+/* Second loop — the overshoot you get when a number is circled twice by hand.
+   Different blob values + a counter-rotation so the two rings never trace. */
+.g-rank::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50% 47% 53% 46% / 46% 53% 47% 54%;
+  border: 1.1px solid var(--pencil);
+  opacity: 0.45;
+  rotate: -14deg;
+  pointer-events: none;
+  filter: url(#rough-hi);
+  transition: rotate 0.22s var(--ease), opacity 0.22s var(--ease);
+}
+.g-card:hover .g-rank::after { rotate: 8deg; opacity: 0.75; }
 /* top-3: rust fill. Stays in --font-hand — Permanent Marker's digits are
    near-illegible at this size (its "1" reads as a stray curl). */
 .g-rank.top {
@@ -451,6 +508,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-color: var(--accent);
   font-size: 21px;
 }
+.g-rank.top::after { border-color: var(--accent); opacity: 0.7; }
 
 /* ------------------------------- Body (text area) ----------------------- */
 .g-body {
@@ -535,6 +593,23 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .g-card:hover .g-thumb { transform: rotate(1deg); border-color: var(--accent); }
 
+/* Washi tape across the top edge — the one detail that says "stuck onto paper"
+   rather than "image in a frame". Overflow-clipped to a half strip on purpose.
+   Tinted from --ink so it flips to translucent chalk on 夜间墨稿. */
+.g-thumb::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: -7px; left: 50%;
+  width: 36px; height: 15px;
+  translate: -50% 0;
+  rotate: -6deg;
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
+  pointer-events: none;
+}
+
 /* Shimmer while image loads */
 .g-thumb:not(.loaded)::before {
   content: "";
@@ -561,7 +636,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ------------------------------- Skeleton ------------------------------- */
 .g-card.skeleton { pointer-events: none; animation: none; }
 .sk-line {
-  height: 14px; border-radius: 6px;
+  height: 14px;
+  border-radius: 6px 9px 5px 8px / 8px 5px 9px 6px;
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--paper-shadow) 45%, var(--paper-card)) 25%,
@@ -576,9 +652,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ------------------------------- Empty / States ------------------------- */
 .g-empty {
+  position: relative;
+  margin: 6px 2px;
   padding: 56px 20px; text-align: center;
+  border-radius: var(--radius-hand);
   font-family: var(--font-hand);
   font-size: 21px; color: var(--ink-pale);
+}
+/* An empty box sketched on the page, rather than bare floating text */
+.g-empty::before {
+  border: 1.6px dashed var(--pencil);
+  opacity: 0.55;
 }
 .state-block {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -588,7 +672,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 #error-state > svg { color: var(--danger); }
 .spinner {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 32px; height: 32px;
+  border-radius: var(--radius-blob);
   border: 2.4px solid var(--paper-shadow);
   border-top-color: var(--accent);
   animation: spin 0.8s linear infinite;
@@ -644,9 +729,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ------------------------------- Footer --------------------------------- */
 .site-foot {
-  margin-top: 34px; padding: 16px 22px;
+  margin-top: 34px; padding: 17px 23px;
   border-radius: var(--radius-hand);
-  border: 1.6px solid var(--pencil);
   transform: rotate(0.35deg);
   filter: drop-shadow(-3px 5px 12px var(--drop));
   display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
@@ -654,11 +738,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-size: 17px; color: var(--ink-pale);
   font-weight: 400; letter-spacing: normal;
 }
+.site-foot::before { border: 1.6px solid var(--pencil); }
 .site-foot a { color: var(--accent-blue); border-bottom: 1.4px dashed var(--pencil); }
 .site-foot a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* ----------------------------- Animations ------------------------------- */
-@keyframes card-in { from { opacity: 0; } to { opacity: 1; } }
+/* Slips are dealt onto the desk. Uses `translate`, NOT `transform` — the `both`
+   fill-mode would otherwise pin transform forever and kill the hover lift. */
+@keyframes card-in {
+  from { opacity: 0; translate: 0 -7px; }
+  to   { opacity: 1; translate: 0 0; }
+}
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -709,8 +799,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .site-header, .site-foot { transform: none; }
   .gallery { gap: 8px; padding: 0; }
   .g-card,
-  .g-card:hover { --rot: 0deg; transform: none; clip-path: none; }
+  .g-card:hover { --rot: 0deg; rotate: 0deg; transform: none; clip-path: none; }
   .g-card { border-radius: var(--radius-hand-sm); }
+  /* No tear to clear any more — the rule can hug the slip edge */
+  .g-card::before { inset: 4px 5px; border-radius: var(--radius-hand-sm); }
   .g-card:hover { filter: drop-shadow(-3px 5px 10px var(--drop-lift)); }
   .chip { --chip-rot: 0deg; }
   .pg-num, .pg-btn { --pg-rot: 0deg; }
@@ -744,6 +836,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .g-heat { font-size: 15px; }
   .g-plat { font-size: 13px; padding: 1px 7px; }
   .g-thumb { width: 58px; height: 44px; border-radius: var(--radius-hand-sm); transform: none; }
+  .g-thumb::after { width: 24px; height: 12px; top: -6px; }
   .g-card:hover .g-thumb { transform: none; }
   .g-rank { width: 30px; height: 30px; font-size: 15px; }
   .g-rank.top { font-size: 13px; }
@@ -783,10 +876,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    /* Without this the stagger holds cards at opacity 0 for up to 400ms */
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
   /* Static tilt is also unwelcome for motion-sensitive users */
-  .g-card, .g-card:hover { --rot: 0deg; transform: none; }
+  .g-card, .g-card:hover { --rot: 0deg; rotate: 0deg; transform: none; }
   .site-header, .site-foot, .brand-emblem, .btn, .btn-theme, .g-thumb { transform: none; }
+  .g-rank::after, .g-card:hover .g-rank::after { rotate: 0deg; }
   .chip { --chip-rot: 0deg; }
   .pg-num, .pg-btn { --pg-rot: 0deg; }
 }

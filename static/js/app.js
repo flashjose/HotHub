@@ -340,7 +340,7 @@ function cardHTML(it, i) {
     : "";
 
   return `
-    <article class="g-card" data-id="${esc(it.platform)}-${rank}">
+    <article class="g-card" style="--i:${i}" data-id="${esc(it.platform)}-${rank}">
       <span class="g-rank${topCls}">${rank}</span>
       <div class="g-body">
         <div class="g-head">

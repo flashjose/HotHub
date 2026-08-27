@@ -48,7 +48,7 @@ export COOKIE_POOL='{"weibo.com":["your_cookie"],"*":["fallback_cookie"]}'
 export COOKIE_STRATEGY=round_robin
 
 # 外部插件目录
-export PLUGIN_DIR=plugins
+export PLUGIN_DIR=plugins  
 ```
 
 ## API 接口

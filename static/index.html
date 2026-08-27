@@ -3,13 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#d9eaf8">
   <title>HotHub · 多平台资源聚合</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600;700&family=Permanent+Marker&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+
+  <!-- Roughen filters — fractal-noise displacement that wobbles an edge so a CSS
+       border reads as a drawn pencil line. Applied ONLY to outline pseudo-
+       elements, never to a box that holds text: feDisplacementMap would smear
+       the 13-16px CJK titles into mush. `rough-lo` = long slow waver for big
+       surfaces, `rough-hi` = tighter waver for small parts. -->
+  <svg class="sketch-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="rough-lo" x="-4%" y="-14%" width="108%" height="128%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.021" numOctaves="2" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="rough-hi" x="-14%" y="-14%" width="128%" height="128%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="2" seed="3" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
   <div class="app">
 
     <!-- ============================ Header ============================ -->
@@ -22,6 +42,9 @@
         </span>
         <span class="brand-text">
           <span class="brand-name">HotHub</span>
+          <svg class="brand-underline" viewBox="0 0 400 20" aria-hidden="true">
+            <path d="M 0 10 Q 100 15 200 8 T 400 12" class="ink-stroke ink-stroke--soft draw-on" style="--len: 420"/>
+          </svg>
           <span class="brand-sub">多平台资源聚合 · 分类查看</span>
         </span>
       </div>

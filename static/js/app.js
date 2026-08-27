@@ -1,7 +1,7 @@
 /* ==========================================================================
-   HotHub — Swiss Minimalism (纯黑白极简主义)
+   HotHub — Paper Sketch(纸绘手稿)
    Text-driven ranked list, DOM-persistent filtering, skeleton loading,
-   dual theme (light/dark) with system preference detection.
+   dual theme (蓝图纸 / 夜间墨稿) with system preference detection.
    ========================================================================== */
 
 // ------------------------------- Theme ------------------------------------
@@ -259,7 +259,7 @@ function renderGallery(forceRebuild) {
   if (emptyEl) emptyEl.remove();
 
   if (!list.length) {
-    dom.gallery.innerHTML = '<div class="g-empty">No matching items</div>';
+    dom.gallery.innerHTML = '<div class="g-empty">这一页还没有内容</div>';
     dom.pager.innerHTML = "";
     return;
   }
@@ -268,7 +268,7 @@ function renderGallery(forceRebuild) {
   dom.gallery.innerHTML = list.map((it, i) => cardHTML(it, i)).join("");
 }
 
-/** Pagination controls — Swiss minimal: prev · N/M · next */
+/** Pagination controls — hand-drawn: prev · N/M · next */
 function renderPager() {
   const total = pageCount();
   if (total <= 1) { dom.pager.innerHTML = ""; return; }
@@ -290,7 +290,7 @@ function renderPager() {
   }
   html += '</span>';
 
-  // Total indicator (Swiss minimal)
+  // Total indicator
   html += `<span class="pg-total">/ ${total}</span>`;
 
   // Next

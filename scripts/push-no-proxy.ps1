@@ -14,7 +14,7 @@ $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $root
 
 # 3. 使用 SSH 远程（不走 git http.proxy）
-$remoteUrl = "git@github.com:flashjose/MultAgents.git"
+$remoteUrl = "git@github.com:flashjose/HotHub.git"
 $existing = git remote get-url origin 2>$null
 if ($LASTEXITCODE -ne 0) {
     git remote add origin $remoteUrl
@@ -29,10 +29,10 @@ Write-Host "Pushing via SSH (bypasses http.proxy)..."
 git push -u origin main
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "Done: https://github.com/flashjose/MultAgents"
+    Write-Host "Done: https://github.com/flashjose/HotHub"
 } else {
     Write-Host ""
     Write-Host "若提示 Repository not found，请先在 GitHub 网页创建空仓库："
-    Write-Host "  https://github.com/new  -> 名称 MultAgents -> 不要勾选 README"
+    Write-Host "  https://github.com/new  -> 名称 HotHub -> 不要勾选 README"
     Write-Host "创建后重新运行本脚本即可。"
 }

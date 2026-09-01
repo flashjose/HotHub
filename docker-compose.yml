@@ -1,19 +1,58 @@
 services:
   api:
     build: .
+    restart: unless-stopped
     ports:
-      - "8000:8000"
+      # 只绑定回环地址：公网流量一律经 nginx 反代（见 deploy/nginx.conf）。
+      # 注意 Docker 发布端口时直接改写 iptables，会绕过 ufw —— 安全性靠这里的
+      # 127.0.0.1 保证，不能指望防火墙。
+      - "127.0.0.1:8000:8000"
     environment:
       REDIS_URL: redis://redis:6379/0
       CACHE_TTL_SECONDS: 900
       REQUEST_TIMEOUT_SECONDS: 8
       TRUST_ENV_PROXY: "false"
       PLUGIN_DIR: plugins
-      COOKIE_STRATEGY: round_robin
+      COOKIE_STRATEGY: ${COOKIE_STRATEGY:-round_robin}
+      # 来自同目录 .env（见 .env.example）。未配置时为空串，
+      # CookiePool.from_env 会自动退化为无 Cookie 模式。
+      COOKIE_POOL: ${COOKIE_POOL:-}
+    volumes:
+      # 前端资源挂载进容器：改完 git pull 即刻生效，无需重建镜像。
+      # main.py 的中间件已给 / 和 /static 设了 Cache-Control: no-cache，
+      # 浏览器会走 ETag 重新校验，普通刷新就能看到改动。
+      - ./static:/app/static:ro
+      # 外部插件目录：放入 .py 后 POST /plugins/reload 热加载，同样不用重建。
+      - ./plugins:/app/plugins:ro
+    healthcheck:
+      # 镜像是 python:3.12-slim，没有 curl，用标准库探活。
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     depends_on:
       - redis
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    restart: unless-stopped
+    # 刻意不映射端口：仅 compose 内网可达。无密码 Redis 暴露到公网是常见的
+    # 入侵入口，而 ufw 挡不住 Docker 发布的端口。
+    command:
+      - redis-server
+      - --save
+      - "60"
+      - "1"
+      - --appendonly
+      - "no"
+      # 纯缓存用途，内存封顶后按 LRU 淘汰，避免长期运行吃满内存。
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

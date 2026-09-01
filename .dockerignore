@@ -1,0 +1,22 @@
+# 构建上下文排除项 —— Dockerfile 用 `COPY . .`，不排除会把 .git / .venv
+# 整个打进镜像层，既拖慢构建也放大体积。
+.git
+.gitignore
+.dockerignore
+
+# 虚拟环境（依赖在镜像内重装，宿主机的不能用）
+.venv
+venv
+
+# Python 缓存
+__pycache__
+*.py[cod]
+.pytest_cache
+
+# 编辑器 / 工具
+.idea
+.vscode
+.claude
+
+# 密钥：绝不进镜像，运行时由 compose 注入
+.env

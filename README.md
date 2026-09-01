@@ -68,8 +68,20 @@ export PLUGIN_DIR=plugins
 ## Docker 运行
 
 ```bash
-docker compose up --build
+cp .env.example .env      # 可选：配置 Cookie 池等
+docker compose up -d --build
 ```
+
+`static/` 与 `plugins/` 以只读卷挂载进容器，改动这两个目录无需重建镜像。
+
+## 生产部署
+
+nginx 反向代理 + Let's Encrypt HTTPS 的完整流程见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)，站点配置模板见 [deploy/nginx.conf](deploy/nginx.conf)。
+
+两点务必注意：
+
+- `/plugins/*` 接口无鉴权且会按传入路径 import Python 文件，公网必须由 nginx 封禁。
+- Docker 发布端口会绕过 ufw，Redis 与 8000 端口只能绑定 `127.0.0.1`，不能指望防火墙。
 
 ## 新增平台插件
 
